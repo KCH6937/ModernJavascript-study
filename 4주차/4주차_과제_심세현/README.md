@@ -11,15 +11,6 @@
 함수 `makeUser`는 객체를 반환합니다.
 이 객체의 `ref`에 접근하면 어떤 결과가 발생하고, 그 이유는 뭘까요?
 
-- **this**
-    - this는 자신이 속한 객체 또는 자기 자신이 생성할 인스턴스를 가리키는 자기 참조 변수다.
-    - this가 가리키는 값은 호출 되는 시점에서 결정된다.
-    - 일반 함수에서 호출된 this는 전역 객체에 바인드 된다.
-
- 
-
-- **예상**
-
 ```jsx
 
 function makeUser() {
@@ -31,18 +22,23 @@ function makeUser() {
 
 let user = makeUser();
 
-alert( user.ref.name ); // John
+alert( user.ref.name ); // undefined
 
 /*
-<오답>
-user는 객체다. this는 자신이 속한 객체를 가리키는 자기 참조 변수다.
+<예상>
+user는 객체다. this는 자신이 속한 객체나 생성될 인스턴스를 가리키는 자기 참조 변수다.(책에 이렇게나옴)
 this는 user를 가리키고 있기 때문에 user.ref.name은 user.name와 같다.
 ref.name = user.name = John
 */
 
 ```
 
-- **실행 결과와 해설**
+- **this**
+    - this는 자신이 속한 객체 또는 자기 자신이 생성할 인스턴스를 가리키는 자기 참조 변수다.
+    - this가 가리키는 값은 호출 되는 시점에서 결정된다.
+    - 일반 함수에서 호출된 this는 전역 객체에 바인드 된다.
+    
+- **답**
 
 ```jsx
 function makeUser() {
@@ -53,27 +49,15 @@ function makeUser() {
 };
 
 let user = makeUser(); //let user = {name: "John", ref: this};
-alert( user.ref.name ); // ''
+alert( user.ref.name ); //''가 출력됨,this는 전역 객체에 바인드 되어 있기 때문 
 alert( user.ref); // window
 
 //this는 전역 객체 window를 가리키고 있다.
 //user.ref.name === window.name
 
 /*
-user.ref는 객체의 프로퍼티이다.  
 프로퍼티 값으로 호출 되었기 때문에 this는 전역 객체에 바인드 되어 있다.
-메서드를 통해서 호출 되었다면 값이 달랐을 것이다.
 */
-
-let user = {
-    name: "심세현",
-    subName: this,
-    sayMyName:function(){
-        console.log(this.name);
-    }
-}
-user.sayMyName(); //심세현
-console.log(user.subName); //window
 
 /*
 프로퍼티 값으로 호출 되면 전역 객체에 바인드 된다.
@@ -87,7 +71,7 @@ function makeUser() {
   return {
     name: "John",
     ref(){return this;}
-  };
+  };// 메서드
 };
 
 let user = makeUser();
@@ -126,13 +110,17 @@ ladder.showStep(); // 1
 `up`, `down`, `showStep` 을 수정해 아래처럼 메서드 호출 체이닝이 가능하도록 해봅시다.
 
 ```jsx
+ladder.up().up().down().showStep(); // 1
+```
+
+- **답**
+
+```jsx
 let ladder = {
   step: 0,
   up() {
     this.step++;
-      return this; 
-// this를 통해 ladder 안의 메서드에 접근이 가능하다.
-// up 메서드를 호출하면 이를 통해 다른 메서드(up,down,showStep)도 호출할 수 있다.
+      return this; // 이 this는 ladder 가리키고 있음. ladder안의 어떤 메서드든 상관 없이 호출 가능함..
   },
   down() {
     this.step--;
@@ -176,36 +164,73 @@ let user = {
 };
 
 askPassword(user.loginOk.bind(user), user.loginFail.bind(user)); // 색칠된 줄
+
+//this를 user에 바인드 해주면 오류가 발생하지 않는다.
+// askPassword()는 일반 함수이기 떄문에 문제가 발상함.
+
 // this가 전역 객체를 가리키고 있기 때문이다.
 // this가 가리키는 대상은 호출되는 시점에서 결정된
 // 호출 되는 시점에서 this는 일반 함수에서 호출이 되고 있다. 
 // 일반 함수에서 호출되는 경우 this는 전역 객체를 가리킨다.
 
-//this를 user에 바인드 해주면 오류가 발생하지 않는다.
 ```
 
-출처: ko.javascript.info
+- **답**
+
+```jsx
+function askPassword(ok, fail) {
+  let password = prompt("비밀번호를 입력해주세요.", '');
+  if (password == "rockstar") ok();
+  else fail();
+}
+
+let user = {
+  name: 'John',
+
+  loginOk() {
+    alert(`${this.name}님이 로그인하였습니다.`);
+  },
+
+  loginFail() {
+    alert(`${this.name}님이 로그인에 실패하였습니다.`);
+  },
+
+};
+
+askPassword(user.loginOk.bind(user), user.loginFail.bind(user)); // 색칠된 줄
+//this를 user에 바인드 해주면 오류가 발생하지 않는다.
+// askPassword()는 일반 함수이기 떄문에 문제가 발상함.
+
+// this가 전역 객체를 가리키고 있기 때문이다.
+// this가 가리키는 대상은 호출되는 시점에서 결정된
+// 호출 되는 시점에서 this는 일반 함수에서 호출이 되고 있다. 
+// 일반 함수에서 호출되는 경우 this는 전역 객체를 가리킨다.
+```
 
 1. **클로저를 이용하여 합 구하기**
 `sum(a)(b) = a+b`와 같은 연산을 해주는 함수 `sum`을 만들어보세요.
 두 개의 괄호를 사용해서 말이죠.
 
 ```jsx
-
-function sum(number=0){
-    let result = +number; 
-    return function(number=0){
-        result += +number;
-        return result;
-    }
-}
-
 // 예시
 sum(1)(2) // 3
 sum(5)(-1) // 4
 ```
 
-출처: ko.javascript.info
+- **답**
+
+```jsx
+function sum(number=0){
+    let result = +number; // result 변수는 sum함수가 종료해도 사용 가능.렉시컬 환경에는 남아 있기 때문임
+    return function(number=0){
+        result += +number;
+        return result;
+    } 
+}
+//sum 함수가 종료가 일어나도 result 변수는 사용가능함.
+sum(1)(2) // 3
+sum(5)(-1) // 4
+```
 
 1. **함수를 사용해 군대 만들기**
 아래 코드는 `shooters`가 요소인 배열을 만들어줍니다.
@@ -214,14 +239,16 @@ sum(5)(-1) // 4
 ```jsx
 function makeArmy() {
   let shooters = [];
-    
-  for(let i=0;i<10;i++){
-      let shooter = function() { // shooter 함수
+
+  let i = 0;
+  while (i < 10) {
+    let shooter = function() { // shooter 함수
       alert( i ); // 몇 번째 shooter인지 출력해줘야 함
     };
     shooters.push(shooter);
-  }
-    
+    i++;
+  } // 같은 하나의 i값을 공유함.
+
   return shooters;
 }
 
@@ -232,9 +259,28 @@ army[5](); // 5번째 shooter 역시 10을 출력함
 // 모든 shooter가 자신의 번호 대신 10을 출력하고 있음
 ```
 
-왜 모든 shooter가 동일한 숫자를 출력하는 걸까요? 제대로 된 번호가 출력될 수 있게 코드를 수정해 보세요.
+- **답**
 
-출처: ko.javascript.info
+```jsx
+function makeArmy() {
+  let shooters = [];
+    
+  for(let i=0;i<10;i++){
+      let shooter = function() { // shooter 함수
+      alert( i ); 
+    };
+    shooters.push(shooter);
+  } // for에서 반복해서 실행 될 때 마다, 매번 새로운 실행 컨텍스트를 생성하기 때문에 각각 다른 i값을 가지게 된다. 서로 다른 i변수 값을 가진다.
+    
+  return shooters;
+}
+
+let army = makeArmy();
+
+army[0](); // 0
+army[5](); // 5
+
+```
 
 **하시면서 중간에 이해가 되지 않는 부분을 페이지와 함께 댓글로 남겨주시면, 스터디원 분들께서 답변을 
 남겨주셨으면 좋겠습니다!**
