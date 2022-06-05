@@ -67,12 +67,13 @@ function unique(arr) {
 // intersection
 // 교집합
 
+
 // Set.prototype.intersection = function(set){
 //     return new Set ( [...this].filter(item => [...set].includes(item) ))  ; 
 //  }
 
 Set.prototype.intersection = function(set){
-    return new Set ( [...this].filter(item => set.has(item) ); 
+    return new Set ( [...this].filter(item => set.has(item) )); 
  }
 
 const A = new Set([1, 2, 3, 4]);
@@ -119,11 +120,19 @@ console.log(B.differences(A));//set[1,3]
 
 ```jsx
 //isSuperset
-// 인수로 받은 배열이 부분 집합인지 알려주는 함수
+// 매개변수로 받은 배열 A가 특정 배열 B의 부분 집합 인지 알려주는 함수
 
 // Set.prototype.isSuperset = function(set){
 //     return [...[...this].filter(item => set.has(item))].length === [...set].length ;
 //  }
+
+// A가 B의 부분 집합이라면, A와 B의 교집합과 B는 항상 같다.
+// A가 B의 부분 집합이라면, A와 B의 교집합의 요소의 개수와 B의 요소의 개수는 같다.
+
+// [...[...this].filter(item => set.has(item))].length 이 코드는 A와 B의 교집합의 개수를 의미한다.
+// [...set].length 는 B의 요소 개수를 의미함. 
+// 이 둘이 같다면 A는 B의 부분 집합이다. true를 출력
+// 이 둘이 다르다면 A는 B의 부분 집합이 아니다. false를 출력함.
 
 Set.prototype.isSuperset = function(subSet){
     const superArr = [...this];
@@ -208,8 +217,7 @@ keys.push("more");
 
 ```jsx
 
-// push는 배열 메서드이다. map.keys는 배열이 아니고 이터러블 객체다. 그래서 push는 사용 불가
-// keys를 배열로 변환하면 push도 사용 가능하다.
+// Map 객체는 이터러블 객체이다. 배열이 아니다. push는 사용 불가
 
 //Map.prototype.push = function(key, value){
 //     this.set(key, value);
